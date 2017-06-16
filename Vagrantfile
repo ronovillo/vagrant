@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
   config.vm.box = "ubuntu/trusty64"
-
+  config.vm.box_check_update = false
   #SSH username/password:
   #config.ssh.username = "vagrant"
   #config.ssh.password = "vagrant"
@@ -26,6 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   	lamp_dev.vm.network "private_network", ip: "192.168.1.100"
   	lamp_dev.vm.provision:shell, path:"script.sh"
     lamp_dev.vm.provision "docker"
+	  lamp_dev.vm.provision:shell, path:"createDB.sh"
     #lamp_dev.vm.provision "file", source: "~/.ssh/jenkins.pub", destination: "~/.ssh/jenkins.pub"
   end
 
@@ -42,6 +43,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       registry.vm.network "private_network", ip: "192.168.1.120"
       registry.vm.provision "docker"
       registry.vm.provision "shell", inline: "docker run -d -p 5000:5000 --restart=always --name registry -v /home/vagrant/:/var/lib/registry registry:2"
+  end
+
+  config.vm.define "jenkins" do |jenkins|
+      jenkins.vm.hostname = "jenkins-server"
+      jenkins.vm.network "private_network", ip: "192.168.1.121"
+      jenkins.vm.provision "docker"
+      jenkins.vm.provision "ansible_local" do |ansible|
+        ansible.playbook = "playbook.yml"
+      end
   end
 
 end
